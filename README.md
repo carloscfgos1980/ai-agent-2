@@ -105,4 +105,39 @@ uv run main.py "Why are episodes 7-9 so much worse than 1-6?"
 The sys.argv variable is a list of strings representing all the command line arguments passed to the script. The first element is the name of the script, and the rest are the arguments. Be sure to import sys to use it.
 If the prompt is not provided, print an error message and exit the program with exit code 1.
 
+# LLMs. Messages
+
+LLM APIs aren't typically used in a "one-shot" manner, for example:
+
+Prompt: "What is the meaning of life?"
+Response: "42"
+They work the same way ChatGPT works: in a conversation. The conversation has a history, and if we keep track of that history, then with each new prompt, the model can see the entire conversation and respond within the larger context of the conversation.
+
+Roles
+Importantly, each message in the conversation has a "role". In the context of a chat app like ChatGPT, your conversations would look like this:
+
+user: "What is the meaning of life?"
+model: "42"
+user: "Wait, what did you just say?"
+model: "42. It's is the answer to the ultimate question of life, the universe, and everything."
+user: "But why?"
+model: "Because Douglas Adams said so."
+So, while our program will still be "one-shot" for now, let's update our code to store a list of messages in the conversation, and pass in the "role" appropriately.
+
+Assignment
+Create a new list of types.Content, and set the user's prompt as the only message (for now):
+from google.genai import types
+
+messages = [
+    types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+]
+
+Update your call to models.generate_content to use the messages list:
+response = client.models.generate_content(
+    model="gemini-2.0-flash-001",
+    contents=messages,
+)
+
+In the future, we'll add more messages to the list as the agent does its tasks in a loop.
+
 # LLMs. 
