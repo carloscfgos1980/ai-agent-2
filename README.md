@@ -1,5 +1,5 @@
 # 2/1-/2025 
-# Python setup
+# LLMs. Python setup
 
 Python Setup
 Let's set up a virtual environment for our project.
@@ -35,7 +35,7 @@ uv run main.py
 
 In your terminal, you should see Hello from YOUR PROJECT NAME
 
-# Gemini
+# LLMs. Gemini
 
 Large Language Models (LLMs) are the fancy-schmancy AI technology that have been making all the waves in the AI world recently. Products like:
 
@@ -92,3 +92,17 @@ Run and submit the CLI tests.
 
 The Gemini API is an external web service and on occasion it's slow and unreliable. It's possible in this course for you to lose armor because of an API outage on Google's end... just be sure to always run before submitting to minimize the risk of that happening.
 
+# LLMs. Input
+
+We've hardcoded the prompt that goes to gemini, which is... not very useful. Let's update our code to accept the prompt as a command line argument.
+
+We don't want our users to have to edit the code to change the prompt!
+
+Assignment
+Update your code to accept a command line argument for the prompt. For example:
+uv run main.py "Why are episodes 7-9 so much worse than 1-6?"
+
+The sys.argv variable is a list of strings representing all the command line arguments passed to the script. The first element is the name of the script, and the rest are the arguments. Be sure to import sys to use it.
+If the prompt is not provided, print an error message and exit the program with exit code 1.
+
+# LLMs. 
