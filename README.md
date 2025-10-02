@@ -176,4 +176,196 @@ Otherwise, it should not print those things.
             print("Prompt tokens:", response.usage_metadata.prompt_token_count)
             print("Response tokens:", response.usage_metadata.candidates_token_count)
 
+# Functions. Calculator
+
+So obviously we're building an AI Agent, but an AI agent needs a project to work on. I've built a little command line calculator app that we'll use as a test project for the AI to read, update, and run.
+
+Assignment
+Create a new directory called calculator in the root of your project.
+Copy and paste the main.py and tests.py files from below into the calculator directory.
+
+<main.py>
+
+import sys
+from pkg.calculator import Calculator
+from pkg.render import format_json_output
+
+def main():
+    calculator = Calculator()
+    if len(sys.argv) <= 1:
+        print("Calculator App")
+        print('Usage: python main.py "<expression>"')
+        print('Example: python main.py "3 + 5"')
+        return
+
+    expression = " ".join(sys.argv[1:])
+    try:
+        result = calculator.evaluate(expression)
+        if result is not None:
+            to_print = format_json_output(expression, result)
+            print(to_print)
+        else:
+            print("Error: Expression is empty or contains only whitespace.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+if **name** == "**main**":
+    main()
+
+<tests.py>
+
+import unittest
+from pkg.calculator import Calculator
+
+class TestCalculator(unittest.TestCase):
+    def setUp(self):
+        self.calculator = Calculator()
+
+    def test_addition(self):
+        result = self.calculator.evaluate("3 + 5")
+        self.assertEqual(result, 8)
+
+    def test_subtraction(self):
+        result = self.calculator.evaluate("10 - 4")
+        self.assertEqual(result, 6)
+
+    def test_multiplication(self):
+        result = self.calculator.evaluate("3 * 4")
+        self.assertEqual(result, 12)
+
+    def test_division(self):
+        result = self.calculator.evaluate("10 / 2")
+        self.assertEqual(result, 5)
+
+    def test_nested_expression(self):
+        result = self.calculator.evaluate("3 * 4 + 5")
+        self.assertEqual(result, 17)
+
+    def test_complex_expression(self):
+        result = self.calculator.evaluate("2 * 3 - 8 / 2 + 5")
+        self.assertEqual(result, 7)
+
+    def test_empty_expression(self):
+        result = self.calculator.evaluate("")
+        self.assertIsNone(result)
+
+    def test_invalid_operator(self):
+        with self.assertRaises(ValueError):
+            self.calculator.evaluate("$ 3 5")
+
+    def test_not_enough_operands(self):
+        with self.assertRaises(ValueError):
+            self.calculator.evaluate("+ 3")
+
+if **name** == "**main**":
+    unittest.main()
+
+Create a new directory in calculator called pkg.
+Copy and paste the calculator.py and render.py files from below into the pkg directory.
+
+<calculator.py>
+
+class Calculator:
+    def **init**(self):
+        self.operators = {
+            "+": lambda a, b: a + b,
+            "-": lambda a, b: a - b,
+            "*": lambda a, b: a * b,
+            "/": lambda a, b: a / b,
+        }
+        self.precedence = {
+            "+": 1,
+            "-": 1,
+            "*": 2,
+            "/": 2,
+        }
+
+    def evaluate(self, expression):
+        if not expression or expression.isspace():
+            return None
+        tokens = expression.strip().split()
+        return self._evaluate_infix(tokens)
+
+    def _evaluate_infix(self, tokens):
+        values = []
+        operators = []
+
+        for token in tokens:
+            if token in self.operators:
+                while (
+                    operators
+                    and operators[-1] in self.operators
+                    and self.precedence[operators[-1]] >= self.precedence[token]
+                ):
+                    self._apply_operator(operators, values)
+                operators.append(token)
+            else:
+                try:
+                    values.append(float(token))
+                except ValueError:
+                    raise ValueError(f"invalid token: {token}")
+
+        while operators:
+            self._apply_operator(operators, values)
+
+        if len(values) != 1:
+            raise ValueError("invalid expression")
+
+        return values[0]
+
+    def _apply_operator(self, operators, values):
+        if not operators:
+            return
+
+        operator = operators.pop()
+        if len(values) < 2:
+            raise ValueError(f"not enough operands for operator {operator}")
+
+        b = values.pop()
+        a = values.pop()
+        values.append(self.operators[operator](a, b))
+
+<render.py>
+
+import json
+
+def format_json_output(expression: str, result: float, indent: int = 2) -> str:
+    if isinstance(result, float) and result.is_integer():
+        result_to_dump = int(result)
+    else:
+        result_to_dump = result
+
+    output_data = {
+        "expression": expression,
+        "result": result_to_dump,
+    }
+    return json.dumps(output_data, indent=indent)
+
+This is the final structure:
+
+├── calculator
+│   ├── main.py
+│   ├── pkg
+│   │   ├── calculator.py
+│   │   └── render.py
+│   └── tests.py
+├── main.py
+├── pyproject.toml
+├── README.md
+└── uv.lock
+
+Run the calculator tests:
+uv run calculator/tests.py
+
+Hopefully the tests all pass!
+
+Now, run the calculator app:
+uv run calculator/main.py "3 + 5"
+
+Hopefully you get 8!
+
+Be sure to run the CLI tests from the root of your project.
+
+Run and submit.
+
 # 
