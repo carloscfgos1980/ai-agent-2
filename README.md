@@ -140,4 +140,40 @@ response = client.models.generate_content(
 
 In the future, we'll add more messages to the list as the agent does its tasks in a loop.
 
-# LLMs. 
+# LLMs. Verbose
+
+As you debug and build your AI agent, you'll probably want to dump a lot more context into the console... but at the same time, we don't want to make the user experience of our CLI tool too noisy...
+
+Let's add an optional command line flag, --verbose, that will allow us to toggle "verbose" output on and off. When we want to see more info, we'll just turn that bad boy on.
+
+Assignment
+Add a new command line argument, --verbose. It should be supplied after the prompt if included. For example:
+uv run main.py "What is the meaning of life?" --verbose
+
+If the --verbose flag is included, the console output should include:
+The user's prompt: "User prompt: {user_prompt}"
+The number of prompt tokens on each iteration: "Prompt tokens: {prompt_tokens}"
+The number of response tokens on each iteration: "Response tokens: {response_tokens}"
+Otherwise, it should not print those things.
+
+**changes**
+    verbose = "--verbose" in sys.argv
+    args = []
+    for arg in sys.argv[1:]:
+        if not arg.startswith("--"):
+            args.append(arg)
+
+        print('\nUsage: python main.py "your prompt here" [--verbose]')
+
+    if verbose:
+        print(f"User prompt: {user_prompt}\n")
+
+        generate_content(client, messages, verbose)
+
+        def generate_content(client, messages, verbose):
+
+            if verbose:
+            print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+            print("Response tokens:", response.usage_metadata.candidates_token_count)
+
+# 
