@@ -599,4 +599,71 @@ response = client.models.generate_content(
 
 Run your program with different prompts. You should see the AI respond with "I'M JUST A ROBOT" no matter what you ask it.
 
-# 
+# Calling Functions: Function Declaration
+
+So we've written a bunch of functions that are LLM friendly (text in, text out), but how does an LLM actually call a function?
+
+Well the answer is that... it doesn't. At least not directly. It works like this:
+
+We tell the LLM which functions are available to it
+We give it a prompt
+It describes which function it wants to call, and what arguments to pass to it
+We call that function with the arguments it provided
+We return the result to the LLM
+We're using the LLM as a decision-making engine, but we're still the ones running the code.
+
+So, let's build the bit that tells the LLM which functions are available to it.
+
+Assignment
+We can use types.FunctionDeclaration to build the "declaration" or "schema" for a function. Again, this basically just tells the LLM how to use the function. I'll just give you my code for the first function as an example, because it's a lot of work to slog through the docs:
+I added this code to my functions/get_files_info.py file, but you can place it anywhere, but remember that it will need to be imported when used:
+
+In our solution it is imported like this: from functions.get_files_info import schema_get_files_info
+schema_get_files_info = types.FunctionDeclaration(
+    name="get_files_info",
+    description="Lists files in the specified directory along with their sizes, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "directory": types.Schema(
+                type=types.Type.STRING,
+                description="The directory to list files from, relative to the working directory. If not provided, lists files in the working directory itself.",
+            ),
+        },
+    ),
+)
+
+We won't allow the LLM to specify the working_directory parameter. We're going to hard code that.
+Use types.Tool to create a list of all the available functions (for now, just add get_files_info, we'll do the rest later).
+available_functions = types.Tool(
+    function_declarations=[
+        schema_get_files_info,
+    ]
+)
+
+Add the available_functions to the client.models.generate_content call as the tools parameter.
+config=types.GenerateContentConfig(
+    tools=[available_functions], system_instruction=system_prompt
+)
+
+Update the system prompt to instruct the LLM on how to use the function. You can just copy mine, but be sure to give it a quick read to understand what it's doing:
+system_prompt = """
+You are a helpful AI coding agent.
+
+When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
+
+- List files and directories
+
+All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
+"""
+
+Instead of simply printing the .text property of the generate_content response, check the .function_calls property as well. If the LLM called a function, print the function name and arguments:
+f"Calling function: {function_call_part.name}({function_call_part.args})"
+
+Otherwise, just print the text as normal.
+
+Test your program.
+"what files are in the root?" -> get_files_info({'directory': '.'})
+"what files are in the pkg directory?" -> get_files_info({'directory': 'pkg'})
+
+#
