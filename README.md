@@ -497,4 +497,36 @@ MAX_CHARS = 10000
 with open(file_path, "r") as f:
     file_content_string = f.read(MAX_CHARS)
 
-# 
+# Functions. Write File
+
+Up until now our program has been read-only... now it's getting really dangerous fun! We'll give our agent the ability to write and overwrite files.
+
+Assignment
+Create a new function in your functions directory. Here's the signature I used:
+def write_file(working_directory, file_path, content):
+
+If the file_path is outside of the working_directory, return a string with an error:
+f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
+
+If the file_path doesn't exist, create it. As always, if there are errors, return a string representing the error, prefixed with "Error:".
+Overwrite the contents of the file with the content argument.
+If successful, return a string with the message:
+f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+
+It's important to return a success string so that our LLM knows that the action it took actually worked. Feedback loops, feedback loops, feedback loops!
+Remove your old tests from tests.py and add three new ones, as always print the results of each:
+write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
+write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet")
+write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
+Run and submit the CLI tests.
+
+Tips
+os.path.exists: Check if a path exists
+os.makedirs: Create a directory and all its parents
+os.path.dirname: Return the directory name
+Example of writing to a file:
+
+with open(file_path, "w") as f:
+    f.write(content)
+
+# Functions. 
