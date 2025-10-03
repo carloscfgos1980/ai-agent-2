@@ -368,4 +368,89 @@ Be sure to run the CLI tests from the root of your project.
 
 Run and submit.
 
-# 
+# Functions. Get Files
+
+We need to give our agent the ability to do stuff. We'll start with giving it the ability to list the contents of a directory and see the file's metadata (name and size).
+
+Before we integrate this function with our LLM agent, let's just build the function itself. Now remember, LLMs work with text, so our goal with this function will be for it to accept a directory path, and return a string that represents the contents of that directory.
+
+Assignment
+Create a new directory called functions in the root of your project (not inside the calculator directory). Inside, create a new file called get_files_info.py. Inside, write this function:
+def get_files_info(working_directory, directory="."):
+
+Here is my project structure so far:
+
+ project_root/
+ ├── calculator/
+ │   ├── main.py
+ │   ├── pkg/
+ │   │   ├── calculator.py
+ │   │   └── render.py
+ │   └── tests.py
+ └── functions/
+     └── get_files_info.py
+
+The directory parameter should be treated as a relative path within the working_directory. Use os.path.join(working_directory, directory) to create the full path, then validate it stays within the working directory boundaries.
+
+If the absolute path to the directory is outside the working_directory, return a string error message:
+f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
+
+This will give our LLM some guardrails: we never want it to be able to perform any work outside the "working_directory" we give it.
+
+Without this restriction, the LLM might go running amok anywhere on the machine, reading sensitive files or overwriting important data. This is a very important step that we'll bake into every function the LLM can call.
+If the directory argument is not a directory, again, return an error string:
+f'Error: "{directory}" is not a directory'
+
+All of our "tool call" functions, including get_files_info, should always return a string. If errors can be raised inside them, we need to catch those errors and return a string describing the error instead. This will allow the LLM to handle the errors gracefully.
+Build and return a string representing the contents of the directory. It should use this format:
+
+- README.md: file_size=1032 bytes, is_dir=False
+- src: file_size=128 bytes, is_dir=True
+- package.json: file_size=1234 bytes, is_dir=False
+
+I've listed useful standard library functions in the tips section.
+
+The exact file sizes and even the order of files may vary depending on your operating system and file system. Your output doesn't need to match the example byte-for-byte, just the overall format
+If any errors are raised by the standard library functions, catch them and instead return a string describing the error. Always prefix error strings with "Error:".
+To import from a subdirectory, use this syntax: from DIRNAME.FILENAME import FUNCTION_NAME
+
+Where DIRNAME is the name of the subdirectory, FILENAME is the name of the file without the .py extension, and FUNCTION_NAME is the name of the function you want to import.
+We need a way to manually debug our new get_files_info function! Create a new tests.py file in the root of your project. When executed directly (uv run tests.py) it should run the following function calls and output the results matching the formatting below (not necessarily the exact numbers).:
+
+get_files_info("calculator", "."):
+Result for current directory:
+
+- main.py: file_size=719 bytes, is_dir=False
+- tests.py: file_size=1331 bytes, is_dir=False
+- pkg: file_size=44 bytes, is_dir=True
+
+get_files_info("calculator", "pkg"):
+Result for 'pkg' directory:
+
+- calculator.py: file_size=1721 bytes, is_dir=False
+- render.py: file_size=376 bytes, is_dir=False
+
+get_files_info("calculator", "/bin"):
+Result for '/bin' directory:
+    Error: Cannot list "/bin" as it is outside the permitted working directory
+
+get_files_info("calculator", "../"):
+Result for '../' directory:
+    Error: Cannot list "../" as it is outside the permitted working directory
+
+Run uv run tests.py, and ensure your function works as expected.
+
+Run and submit the CLI tests.
+
+Tips
+Here are some standard library functions you'll find helpful:
+
+os.path.abspath(): Get an absolute path from a relative path
+os.path.join(): Join two paths together safely (handles slashes)
+.startswith(): Check if a string starts with a substring
+os.path.isdir(): Check if a path is a directory
+os.listdir(): List the contents of a directory
+os.path.getsize(): Get the size of a file
+os.path.isfile(): Check if a path is a file
+.join(): Join a list of strings together with a separator
+
