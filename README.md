@@ -666,4 +666,32 @@ Test your program.
 "what files are in the root?" -> get_files_info({'directory': '.'})
 "what files are in the pkg directory?" -> get_files_info({'directory': 'pkg'})
 
+# Functions CallingL More Declarations
+
+Now that our LLM is able to specify a function call to the get_files_info function, let's give it the ability to call the other functions as well.
+
+Assignment
+Following the same pattern that we used for schema_get_files_info, create function declarations for:
+schema_get_file_content
+schema_run_python_file
+schema_write_file
+Update your available_functions to include all the function declarations in the list.
+Update your system prompt. Instead of the allowed operations only being:
+
+- List files and directories
+
+Update it to have all four operations:
+
+- List files and directories
+- Read file contents
+- Execute Python files with optional arguments
+- Write or overwrite files
+
+Test prompts that you suspect will result in the various function calls. For example:
+"read the contents of main.py" -> get_file_content({'file_path': 'main.py'})
+"write 'hello' to main.txt" -> write_file({'file_path': 'main.txt', 'content': 'hello'})
+"run main.py" -> run_python_file({'file_path': 'main.py'})
+"list the contents of the pkg directory" -> get_files_info({'directory': 'pkg'})
+All the LLM is expected to do here is to choose which function to call based on the user's request. We'll have it actually call the function later.
+
 #
